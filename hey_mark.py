@@ -70,7 +70,7 @@ def normalize(word):
 
 def write_thing(thing, cmd_string):
     try:
-        with open(f'./private/{cmd_string}_list}.txt', 'a') as write_list:
+        with open(f"./private/{cmd_string}_list.txt", 'a') as write_list:
             write_list.write(thing)
             print(f"Successfully added: {thing}")
         write_list.close()
@@ -81,7 +81,7 @@ def write_thing(thing, cmd_string):
 
 def read_thing(cmd_string):
     try:
-        with open(f'./private/{cmd_string}_list.txt', 'r') as read_list:
+        with open(f"./private/{cmd_string}_list.txt", 'r') as read_list:
             string_list = read_list.read()
             return string_list
     except Exception as e:
