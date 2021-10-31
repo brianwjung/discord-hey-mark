@@ -97,7 +97,9 @@ def remove_thing(thing, cmd_string):
         return False
     try:
         # sed -i '/pattern to match/d' ./infile
-        sed_result = subprocess.call(["sed", "-i", f"\"/{thing}/d\"", f"\"./private/{list_name}_list.txt\"" ])
+        expression_string = f"'/{thing}/d'"
+        file_path = f"./private/{list_name}_list.txt"
+        sed_result = subprocess.call(["sed", "-i", expression_string, file_path])
         if sed_result.returncode == 0:
             return True
         else:
