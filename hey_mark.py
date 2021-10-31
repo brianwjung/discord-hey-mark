@@ -70,7 +70,7 @@ def normalize(word):
 def write_thing(thing, cmd_string):
     try:
         with open(f"./private/{cmd_string}_list.txt", 'a') as write_list:
-            write_list.write(thing)
+            write_list.write(f"{thing}\n")
             print(f"Successfully added: {thing}")
         write_list.close()
     except Exception as e:
