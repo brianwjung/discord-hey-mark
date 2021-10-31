@@ -24,7 +24,6 @@ def get_team_name_id(team_name):
             print(f"Team found: {team['name']}")
             print(f"Team ID is: {team['id']}")
             return team['name'], team['id']
-    print(f"Team Name {team_name} not found.")
     return False, None
 
 def get_current_week_range():
@@ -98,7 +97,7 @@ def remove_thing(thing, cmd_string):
         return False
     try:
         # sed -i '/pattern to match/d' ./infile
-        sed_result = subprocess.call(["sed", "", f"/{thing}/d", f"./private/{list_name}_list.txt" ])
+        sed_result = subprocess.call(["sed", "-i", f"\"/{thing}/d\"", f"\"./private/{list_name}_list.txt\"" ])
         if sed_result.returncode == 0:
             return True
         else:
@@ -118,10 +117,11 @@ class HeyMark(discord.Client):
             if message.content.startswith('!heymark'):
                 parsed_message = message.content.split(' ')
                 subject = normalize(parsed_message[1])
-                action = normalize(' '.join(parsed_message[2:]))
+                joined_action = ' '.join(parsed_message[2:])
+                action = normalize(joined_action)
                 team_name, team_id = get_team_name_id(subject)
                 if team_name is False or team_name is None:
-                    if (subject == "watch" or subject == "remember") and action is None:
+                    if (subject == "watch" or subject == "remember") and action != "list":
                         watch_result = write_thing(action, subject)
                         if watch_result:
                             await message.channel.send(f"Successfully added {action} to {subject} list!")
@@ -141,7 +141,7 @@ class HeyMark(discord.Client):
                         else:
                             await message.channel.send(f"Failed to remove {action} because I'm broken.")
                     else:
-                        response = f"""**Unrecognized command**:\n**Format**:\n  *!heymark <team name> <schedule|standings>*\n  *!heymark <watch|remember> <thing>*\n *!heymark <watch|remember> list*\n *!heymark <watched|remembered> <thing>"""
+                        response = f"""**Unrecognized command**:\n**Format**:\n  *!heymark <team name> <schedule|standings>*\n  *!heymark <watch|remember> <thing>*\n *!heymark <watch|remember> list*\n *!heymark <watched|remembered> <thing>*"""
                         await message.channel.send(response)
                 else:
                     if action == "schedule":
