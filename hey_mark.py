@@ -141,7 +141,7 @@ class HeyMark(discord.Client):
                         else:
                             await message.channel.send(f"Failed to remove {action} because I'm broken.")
                     else:
-                        response = f"""**Unrecognized command**:\n**Format**:\n  *!heymark <team name> <schedule|standings>*\n  *!heymark remember <thing>*\n  *!heymark watch <thing>*\n  *!heymark remember list*\n  *!heymark watch list*"""
+                        response = f"""**Unrecognized command**:\n**Format**:\n  *!heymark <team name> <schedule|standings>*\n  *!heymark <watch|remember> <thing>*\n *!heymark <watch|remember> list*\n *!heymark <watched|remembered> <thing>"""
                         await message.channel.send(response)
                 else:
                     if action == "schedule":
@@ -167,7 +167,7 @@ class HeyMark(discord.Client):
                         message_embed.set_footer(text="GG!")
                         await message.channel.send(embed=message_embed)
                     else:
-                        response = f"""**Unrecognized command**:\n**Format**:\n  *!heymark <team name> <schedule|standings>*\n  *!heymark remember <thing>*\n  *!heymark watch <thing>*"""
+                        response = f"""**Unrecognized command**:\n**Format**:\n  *!heymark <team name> <schedule|standings>*\n  *!heymark <watch|remember> <thing>*\n *!heymark <watch|remember> list*\n *!heymark <watched|remembered> <thing>"""
                         await message.channel.send(response)
 
 client = HeyMark()
