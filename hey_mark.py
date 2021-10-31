@@ -128,7 +128,7 @@ class HeyMark(discord.Client):
                             await message.channel.send(f"Failed to add {action} to {subject} list. Shit's broke!")
                     elif (subject == "watch" or subject == "remember") and action == "list":
                         read_result = read_thing(subject)
-                        message_embed = discord.Embed(title=f"{team_name} Schedule", color=0x008080)
+                        message_embed = discord.Embed(title=f"Success!", color=0x008080)
                         message_embed.set_author(name="HeyMark")
                         message_embed.set_thumbnail(url="https://i.imgur.com/6NVLtGF.png")
                         message_embed.add_field(name=f"{subject.capitalize()} List", value=read_result, inline=False)
