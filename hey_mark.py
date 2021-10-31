@@ -100,11 +100,8 @@ def remove_thing(thing, cmd_string):
         expression_string = f"/{thing}/d"
         file_path = f"./private/{list_name}_list.txt"
         sed_result = subprocess.call(["sed", "-i", expression_string, file_path])
-        if sed_result.returncode == 0:
+        if sed_result == 0:
             return True
-        else:
-            print(f"Something broke. I guess it was this: {sed_result.stderr}?")
-            return False
     except Exception as e:
         print(f"I broke when trying to remove {thing} from {list_name}_list.txt because {e}")
         return False
