@@ -118,7 +118,7 @@ class HeyMark(discord.Client):
             if message.content.startswith('!heymark'):
                 parsed_message = message.content.split(' ')
                 subject = normalize(parsed_message[1])
-                action = normalize(parsed_message[2])
+                action = normalize(parsed_message[2:])
                 team_name, team_id = get_team_name_id(subject)
                 if team_name is False or team_name is None:
                     if (subject == "watch" or subject == "remember") and action is None:
