@@ -1,8 +1,9 @@
 import discord
 import json
 import os
-import requests
 import pytz
+import requests
+import subprocess
 
 from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
@@ -24,7 +25,7 @@ def get_team_name_id(team_name):
             print(f"Team ID is: {team['id']}")
             return team['name'], team['id']
     print(f"Team Name {team_name} not found.")
-    return False
+    return False, None
 
 def get_current_week_range():
     current_date = datetime.now()
@@ -67,6 +68,46 @@ def normalize(word):
     lowercased = word.lower()
     return lowercased
 
+def write_thing(thing, cmd_string):
+    try:
+        with open(f'./private/{cmd_string}_list}.txt', 'a') as write_list:
+            write_list.write(thing)
+            print(f"Successfully added: {thing}")
+        write_list.close()
+    except Exception as e:
+        print(f"I failed to remember: {thing} in {cmd_string}_list because: {e}")
+        return False
+    return True
+
+def read_thing(cmd_string):
+    try:
+        with open(f'./private/{cmd_string}_list.txt', 'r') as read_list:
+            string_list = read_list.read()
+            return string_list
+    except Exception as e:
+        print(f"Error when reading {cmd_string}_list becaue {e}")
+        return False
+
+def remove_thing(thing, cmd_string):
+    list_name = ""
+    if "watch" in cmd_string.lower():
+        list_name = "watch"
+    elif "remember" in cmd_string.lower():
+        list_name = "remember"
+    else:
+        return False
+    try:
+        # sed -i '/pattern to match/d' ./infile
+        sed_result = subprocess.call(["sed", "", f"/{thing}/d", f"./private/{list_name}_list.txt" ])
+        if sed_result.returncode == 0:
+            return True
+        else:
+            print(f"Something broke. I guess it was this: {sed_result.stderr}?")
+            return False
+    except Exception as e:
+        print(f"I broke when trying to remove {thing} from {list_name}_list.txt because {e}")
+        return False
+
 class HeyMark(discord.Client):
     async def on_ready(self):
         print(f"Logged on as {self.user}!")
@@ -76,36 +117,58 @@ class HeyMark(discord.Client):
         if message.author != self.user:
             if message.content.startswith('!heymark'):
                 parsed_message = message.content.split(' ')
-                team_name = normalize(parsed_message[1])
-                cmd = normalize(parsed_message[2])
-                team_name, team_id = get_team_name_id(team_name)
-                if team_id is False:
-                    await message.channel.send(f"Unable to find team that has the name: {team_name}")
-                if cmd == "schedule":
-                    game_times, home_teams, away_teams = get_team_schedule(team_id)
-                    for time, home, away in zip(game_times, home_teams, away_teams):
+                subject = normalize(parsed_message[1])
+                action = normalize(parsed_message[2])
+                team_name, team_id = get_team_name_id(subject)
+                if team_name is False or team_name is None:
+                    if (subject == "watch" or subject == "remember") and action is None:
+                        watch_result = write_thing(action, subject)
+                        if watch_result:
+                            await message.channel.send(f"Successfully added {action} to {subject} list!")
+                        else:
+                            await message.channel.send(f"Failed to add {action} to {subject} list. Shit's broke!")
+                    elif (subject == "watch" or subject == "remember") and action == "list":
+                        read_result = read_thing(subject)
                         message_embed = discord.Embed(title=f"{team_name} Schedule", color=0x008080)
                         message_embed.set_author(name="HeyMark")
                         message_embed.set_thumbnail(url="https://i.imgur.com/6NVLtGF.png")
-                        message_embed.add_field(name="Dates", value=time, inline=False)
-                        message_embed.add_field(name="Home Team", value=home, inline=False)
-                        message_embed.add_field(name="Away Team", value=away, inline=False)
-                        message_embed.set_footer(text="Plan accordingly!")
+                        message_embed.add_field(name=f"{subject.capitalize()} List", value=read_result, inline=False)
                         await message.channel.send(embed=message_embed)
-                elif cmd == "standings":
-                    games_played, games_won, games_lost, ot = get_team_standings(team_id)
-                    message_embed = discord.Embed(title=f"{team_name} Standings", color=0x008080)
-                    message_embed.set_author(name="HeyMark")
-                    message_embed.set_thumbnail(url="https://i.imgur.com/6NVLtGF.png")
-                    message_embed.add_field(name="Games Played", value=games_played, inline=False)
-                    message_embed.add_field(name="Games Won", value=games_won, inline=False)
-                    message_embed.add_field(name="Games Lost", value=games_lost, inline=False)
-                    message_embed.add_field(name="Overtime", value=ot, inline=False)
-                    message_embed.set_footer(text="GG!")
-                    await message.channel.send(embed=message_embed)
+                    elif (subject == "watched" or subject == "remembered"):
+                        remove_result = remove_thing(action, subject)
+                        if remove_result:
+                            await message.channel.send(f"> Successfully removed {action} from list!")
+                        else:
+                            await message.channel.send(f"Failed to remove {action} because I'm broken.")
+                    else:
+                        response = f"""**Unrecognized command**:\n**Format**:\n  *!heymark <team name> <schedule|standings>*\n  *!heymark remember <thing>*\n  *!heymark watch <thing>*\n  *!heymark remember list*\n  *!heymark watch list*"""
+                        await message.channel.send(response)
                 else:
-                    response = f"""**Unrecognized command**:\n**Format**: *!heymark <team name> <command>*\n**Valid Commands**: *<schedule|standings|~~stats~~>*\n\n**Example**: *!heymark canucks schedule*"""
-                    await message.channel.send(response)
+                    if action == "schedule":
+                        game_times, home_teams, away_teams = get_team_schedule(team_id)
+                        for time, home, away in zip(game_times, home_teams, away_teams):
+                            message_embed = discord.Embed(title=f"{team_name} Schedule", color=0x008080)
+                            message_embed.set_author(name="HeyMark")
+                            message_embed.set_thumbnail(url="https://i.imgur.com/6NVLtGF.png")
+                            message_embed.add_field(name="Dates", value=time, inline=False)
+                            message_embed.add_field(name="Home Team", value=home, inline=False)
+                            message_embed.add_field(name="Away Team", value=away, inline=False)
+                            message_embed.set_footer(text="Plan accordingly!")
+                            await message.channel.send(embed=message_embed)
+                    elif action == "standings":
+                        games_played, games_won, games_lost, ot = get_team_standings(team_id)
+                        message_embed = discord.Embed(title=f"{team_name} Standings", color=0x008080)
+                        message_embed.set_author(name="HeyMark")
+                        message_embed.set_thumbnail(url="https://i.imgur.com/6NVLtGF.png")
+                        message_embed.add_field(name="Games Played", value=games_played, inline=False)
+                        message_embed.add_field(name="Games Won", value=games_won, inline=False)
+                        message_embed.add_field(name="Games Lost", value=games_lost, inline=False)
+                        message_embed.add_field(name="Overtime", value=ot, inline=False)
+                        message_embed.set_footer(text="GG!")
+                        await message.channel.send(embed=message_embed)
+                    else:
+                        response = f"""**Unrecognized command**:\n**Format**:\n  *!heymark <team name> <schedule|standings>*\n  *!heymark remember <thing>*\n  *!heymark watch <thing>*"""
+                        await message.channel.send(response)
 
 client = HeyMark()
 client.run(DISCORD_TOKEN)

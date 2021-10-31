@@ -133,3 +133,6 @@ dmypy.json
 
 # Misc
 .DS_Store
+
+# private
+private/*
