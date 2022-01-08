@@ -14,6 +14,13 @@ import (
 // Bot Command Prefix
 var COMMAND_PREFIX = "!heymark"
 
+func getStandings(message []string) string {
+	fmt.Printf("Length of message: %d", len(message))
+	fmt.Printf("Message: %v", message)
+	output := fmt.Sprintf("Standings for %s go here.", message[2])
+	return output
+}
+
 func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	// Ignore all messages from the bot itself
 	if m.Author.ID == s.State.User.ID {
@@ -22,6 +29,7 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	// Parse the message
 	message := strings.Split(strings.ToLower(m.Content), " ")
+	fmt.Println(message)
 
 	// Check if bot command
 	if message[0] == COMMAND_PREFIX {
@@ -35,14 +43,7 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		case "watch":
 			s.ChannelMessageSend(m.ChannelID, "Watch a thing!")
 		case "standings":
-			fmt.Printf("Length of message: %d", len(message))
-			fmt.Printf("Message: %v", message)
-			output := fmt.Sprintf("Standings for %s go here.", message[2])
-			if len(message) == 2 {
-				s.ChannelMessageSend(m.ChannelID, output)
-			} else {
-				return
-			}
+			s.ChannelMessageSend(m.ChannelID, getStandings(message))
 		case "schedule":
 			output := fmt.Sprintf("Schedule for %s go here.", message[2])
 			if len(message) == 2 {
@@ -53,6 +54,8 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		default:
 			s.ChannelMessageSend(m.ChannelID, "Unrecognized command!")
 		}
+	} else {
+		return
 	}
 }
 
