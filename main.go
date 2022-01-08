@@ -35,6 +35,8 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		case "watch":
 			s.ChannelMessageSend(m.ChannelID, "Watch a thing!")
 		case "standings":
+			fmt.Printf("Length of message: %d", len(message))
+			fmt.Printf("Message: %v", message)
 			output := fmt.Sprintf("Standings for %s go here.", message[2])
 			if len(message) == 2 {
 				s.ChannelMessageSend(m.ChannelID, output)
