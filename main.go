@@ -15,12 +15,14 @@ import (
 var COMMAND_PREFIX = "!heymark"
 
 func getStandings(message []string) string {
-	output := fmt.Sprintf("Standings for %s go here.", message[2])
+	team := strings.Join(message[2:], " ")
+	output := fmt.Sprintf("Standings for %s go here.", team)
 	return output
 }
 
 func getSchedule(message []string) string {
-	output := fmt.Sprintf("Schedule for %s go here.", message[2:])
+	team := strings.Join(message[2:], " ")
+	output := fmt.Sprintf("Schedule for %s go here.", team)
 	return output
 }
 
