@@ -11,6 +11,9 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+// Bot Command Prefix
+var COMMAND_PREFIX = "!heymark"
+
 func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	// Ignore all messages from the bot itself
 	if m.Author.ID == s.State.User.ID {
@@ -18,17 +21,41 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	// Parse the message
-	message := strings.Split(m.Content, " ")
-	baseCommand := message[0]
+	message := strings.Split(strings.ToLower(m.Content), " ")
 
-	switch baseCommand {
-	case "hello":
-		s.ChannelMessageSend(m.ChannelID, "Hey!")
+	// Check if bot command
+	if message[0] == COMMAND_PREFIX {
+		// Get the base command
+		baseCommand := strings.ToLower(message[1])
+
+		// Command list
+		switch baseCommand {
+		case "hey":
+			s.ChannelMessageSend(m.ChannelID, "Hey!")
+		case "watch":
+			s.ChannelMessageSend(m.ChannelID, "Watch a thing!")
+		case "standings":
+			output := fmt.Sprintf("Standings for %s go here.", message[2])
+			if len(message) == 2 {
+				s.ChannelMessageSend(m.ChannelID, output)
+			} else {
+				return
+			}
+		case "schedule":
+			output := fmt.Sprintf("Schedule for %s go here.", message[2])
+			if len(message) == 2 {
+				s.ChannelMessageSend(m.ChannelID, output)
+			} else {
+				return
+			}
+		default:
+			s.ChannelMessageSend(m.ChannelID, "Unrecognized command!")
+		}
 	}
-
 }
 
 func main() {
+	// Create the Discord Client
 	discord, err := discordgo.New("Bot " + os.Getenv("DISCORD_HEY_MARK_CLIENT_SECRET"))
 	if err != nil {
 		log.Fatalf("error initializing bot: %v", err)
