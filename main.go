@@ -15,9 +15,12 @@ import (
 var COMMAND_PREFIX = "!heymark"
 
 func getStandings(message []string) string {
-	fmt.Printf("Length of message: %d", len(message))
-	fmt.Printf("Message: %v", message)
 	output := fmt.Sprintf("Standings for %s go here.", message[2])
+	return output
+}
+
+func getSchedule(message []string) string {
+	output := fmt.Sprintf("Schedule for %s go here.", message[2:])
 	return output
 }
 
@@ -29,7 +32,6 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	// Parse the message
 	message := strings.Split(strings.ToLower(m.Content), " ")
-	fmt.Println(message)
 
 	// Check if bot command
 	if message[0] == COMMAND_PREFIX {
@@ -45,12 +47,7 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		case "standings":
 			s.ChannelMessageSend(m.ChannelID, getStandings(message))
 		case "schedule":
-			output := fmt.Sprintf("Schedule for %s go here.", message[2])
-			if len(message) == 2 {
-				s.ChannelMessageSend(m.ChannelID, output)
-			} else {
-				return
-			}
+			s.ChannelMessageSend(m.ChannelID, getSchedule(message))
 		default:
 			s.ChannelMessageSend(m.ChannelID, "Unrecognized command!")
 		}
